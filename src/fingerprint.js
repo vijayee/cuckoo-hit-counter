@@ -8,7 +8,7 @@ module.exports = class Fingerprint {
   constructor (buf, fpSize) {
     if (!Buffer.isBuffer(buf) && typeof buf === 'object') {
       if (buf.fp) {
-        if(!( buf.fp instanceof Uint8Array )){
+        if (!( buf.fp instanceof Uint8Array )) {
           throw new TypeError('Invalid Fingerprint')
         }
         _fp.set(this, toBuffer(buf.fp))
@@ -16,12 +16,12 @@ module.exports = class Fingerprint {
         throw new TypeError('Invalid Fingerprint')
       }
 
-      if(!Number.isInteger(buf.rank)){
+      if (!Number.isInteger(buf.rank)) {
         throw new TypeError('Invalid Rank')
       }
       _rank.set(this, buf.rank)
 
-      if(!Number.isInteger(buf.tally)){
+      if (!Number.isInteger(buf.tally)) {
         throw new TypeError('Invalid Tally')
       }
       _tally.set(this, buf.tally)
@@ -125,7 +125,13 @@ module.exports = class Fingerprint {
     let fp = _fp.get(this)
     let rank = _rank.get(this)
     let tally = _tally.get(this)
-    return {fp, rank, tally}
+    return { fp, rank, tally }
+  }
+
+  toCuckooFilterJSON () {
+    let fp = _fp.get(this)
+    let rank = _rank.get(this)
+    return { fp }
   }
 
   static fromJSON (obj) {
@@ -143,6 +149,6 @@ function fibSequence (num) {
   }
   return output
 }
-function fibonacciRankToTally(rank, tally) {
+function fibonacciRankToTally (rank, tally) {
   return (2 * fibSequence(rank)) + tally
 }

@@ -331,13 +331,37 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     }
   }
 
+  toCuckooFilterJSON () {
+    let fpSize = _fpSize.get(this)
+    let cfSize = _cfSize.get(this)
+    let count = _count.get(this)
+    let buckets = _buckets.get(this)
+    let bSize = _bSize.get(this)
+    return {
+      cfSize: cfSize,
+      fpSize: fpSize,
+      bSize: bSize,
+      count: count,
+      buckets: buckets.map((bucket)=> {
+        if (!bucket) {
+          return null
+        } else {
+          return bucket. toCuckooFilterJSON()
+        }
+      })
+    }
+  }
+
   static fromJSON (obj) {
     return new CuckooHitCounter(obj)
   }
-  toCBOR(){
+  toCBOR () {
     return abToB(cbor.encode(this.toJSON()))
   }
-  static fromCBOR(buf){
+  toCuckooFilterCBOR () {
+    return abToB(cbor.encode(this. toCuckooFilterJSON()))
+  }
+  static fromCBOR(buf) {
     let obj = cbor.decode(toAb(buf))
     return CuckooHitCounter.fromJSON(obj)
   }

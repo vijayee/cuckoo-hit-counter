@@ -31,4 +31,3 @@ let cbor = cuckoo.toCBOR() // serialize to cbor
 ```
 ## Note
 Size your buckets and fingerprints to avoid collisions.
-Scalable cuckoo filters scale exponentially to hold your data.

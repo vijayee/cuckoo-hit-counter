@@ -165,6 +165,19 @@ module.exports = class Bucket {
     }
   }
 
+  toCuckooFilterJSON () {
+    let contents = _contents.get(this)
+    return {
+      contents: contents.map((fp)=> {
+        if (!fp) {
+          return null
+        } else {
+          return fp.toCuckooFilterJSON()
+        }
+      })
+    }
+  }
+
   static fromJSON (obj) {
     return new Bucket(obj)
   }
