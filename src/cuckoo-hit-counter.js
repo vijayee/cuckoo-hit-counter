@@ -161,8 +161,15 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let buckets = _buckets.get(this)
     let fingerprint = new Fingerprint(buf, fpSize)
     let j = util.hash(buf) % cfSize
-    let k = (j ^ fingerprint.hash()) % cfSize
-    return (buckets[ j ] ? buckets[ j ].contains(fingerprint) : false) || ( buckets[ k ] ? buckets[ k ].contains(fingerprint) : false)
+    let inJ = buckets[ j ] ? buckets[ j ].contains(fingerprint) : false
+
+    if (inJ) {
+      return inJ
+    } else {
+      let k = (j ^ fingerprint.hash()) % cfSize
+      let inK = buckets[ k ] ? buckets[ k ].contains(fingerprint) : false
+      return inK
+    }
   }
 
   increment (buf) {
@@ -180,14 +187,81 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let buckets = _buckets.get(this)
     let fingerprint = new Fingerprint(buf, fpSize)
     let j = util.hash(buf) % cfSize
-    let k = (j ^ fingerprint.hash()) % cfSize
     let emit =  (rank) => {
       this.emit('promote', { key: buf.toString(), rank})
     }
-    if((buckets[ j ] ? buckets[ j ].increment(fingerprint, emit) : false) || ( buckets[ k ] ? buckets[ k ].increment(fingerprint, emit) : false)) {
-      return true
+    let inJ = buckets[ j ] ? buckets[ j ].increment(fingerprint, emit) : false
+
+    if (typeof inJ !== 'boolean') {
+      return inJ
     } else {
-      return this.add(buf)
+      let k = (j ^ fingerprint.hash()) % cfSize
+      let inK = buckets[ k ] ? buckets[ k ].increment(fingerprint, emit) : false
+      if (typeof inK !== 'boolean') {
+        return inK
+      } else {
+        return false
+      }
+    }
+  }
+
+  promote (buf, number) {
+    if (typeof buf === 'number') {
+      buf = util.numberToBuffer(buf)
+    }
+    if (typeof buf === 'string') {
+      buf = new Buffer(buf)
+    }
+    if (!Buffer.isBuffer(buf)) {
+      throw new TypeError('Invalid Buffer')
+    }
+    let fpSize = _fpSize.get(this)
+    let cfSize = _cfSize.get(this)
+    let buckets = _buckets.get(this)
+    let fingerprint = new Fingerprint(buf, fpSize)
+    let j = util.hash(buf) % cfSize
+    let inJ = buckets[ j ] ? buckets[ j ].promote(fingerprint) : false
+
+    if (typeof inJ !== 'boolean') {
+      return inJ
+    } else {
+      let k = (j ^ fingerprint.hash()) % cfSize
+      let inK = buckets[ k ] ? buckets[ k ].promote(fingerprint) : false
+      if (typeof inK !== 'boolean') {
+        return inK
+      } else {
+        return false
+      }
+    }
+  }
+
+  demote (buf, number) {
+    if (typeof buf === 'number') {
+      buf = util.numberToBuffer(buf)
+    }
+    if (typeof buf === 'string') {
+      buf = new Buffer(buf)
+    }
+    if (!Buffer.isBuffer(buf)) {
+      throw new TypeError('Invalid Buffer')
+    }
+    let fpSize = _fpSize.get(this)
+    let cfSize = _cfSize.get(this)
+    let buckets = _buckets.get(this)
+    let fingerprint = new Fingerprint(buf, fpSize)
+    let j = util.hash(buf) % cfSize
+    let inJ = buckets[ j ] ? buckets[ j ].demote(fingerprint) : false
+
+    if (typeof inK !== 'boolean') {
+      return inJ
+    } else {
+      let k = (j ^ fingerprint.hash()) % cfSize
+      let inK = buckets[ k ] ? buckets[ k ].demote(fingerprint) : false
+      if (typeof inJ !== 'boolean') {
+        return inK
+      } else {
+        return false
+      }
     }
   }
 
@@ -208,12 +282,20 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let j = util.hash(buf) % cfSize
     let k = (j ^ fingerprint.hash()) % cfSize
     let emit =  (rank) => {
-      this.emit('demote',  {key: buf.toString(), rank})
+      this.emit('promote', { key: buf.toString(), rank})
     }
-    if ((buckets[ j ] ? buckets[ j ].decrement(fingerprint, emit) : false) || ( buckets[ k ] ? buckets[ k ].decrement(fingerprint, emit) : false)) {
-      return true
+    let inJ = buckets[ j ] ? buckets[ j ].decrement(fingerprint, emit) : false
+
+    if (typeof inJ !== 'boolean') {
+      return inJ
     } else {
-      return false
+      let k = (j ^ fingerprint.hash()) % cfSize
+      let inK = buckets[ k ] ? buckets[ k ].decrement(fingerprint, emit) : false
+      if (typeof inK !== 'boolean') {
+        return inK
+      } else {
+        return false
+      }
     }
   }
 
@@ -232,14 +314,14 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let buckets = _buckets.get(this)
     let fingerprint = new Fingerprint(buf, fpSize)
     let j = util.hash(buf) % cfSize
-    let k = (j ^ fingerprint.hash()) % cfSize
     let inJ = buckets[ j ] ? buckets[ j ].rank(fingerprint) : false
 
     if (typeof inJ !== 'boolean') {
       return inJ
     } else {
+      let k = (j ^ fingerprint.hash()) % cfSize
       let inK = buckets[ k ] ? buckets[ k ].rank(fingerprint) : false
-      if (typeof inJ !== 'boolean') {
+      if (typeof inK !== 'boolean') {
         return inK
       } else {
         return 0
@@ -262,11 +344,11 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let buckets = _buckets.get(this)
     let fingerprint = new Fingerprint(buf, fpSize)
     let j = util.hash(buf) % cfSize
-    let k = (j ^ fingerprint.hash()) % cfSize
     let inJ = buckets[ j ] ? buckets[ j ].tally(fingerprint) : false
     if (typeof inJ !== 'boolean') {
       return inJ
     } else {
+      let k = (j ^ fingerprint.hash()) % cfSize
       let inK = buckets[ k ] ? buckets[ k ].tally(fingerprint) : false
       if (!Number.isInteger(inK)) {
         return inK
@@ -288,17 +370,22 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     }
     let fpSize = _fpSize.get(this)
     let cfSize = _cfSize.get(this)
-    let count = _count.get(this)
     let buckets = _buckets.get(this)
     let fingerprint = new Fingerprint(buf, fpSize)
     let j = util.hash(buf) % cfSize
-    let k = (j ^ fingerprint.hash()) % cfSize
-    if ((buckets[ j ] ? buckets[ j ].remove(fingerprint) : false ) || (buckets[ k ] ? buckets[ k ].remove(fingerprint) : false)) {
-      count--
-      _count.set(this, count)
-      return true
+    let inJ = buckets[ j ] ? buckets[ j ].remove(fingerprint) : false
+
+    if (inJ) {
+      return inJ
+    } else {
+      let k = (j ^ fingerprint.hash()) % cfSize
+      let inK = buckets[ k ] ? buckets[ k ].remove(fingerprint) : false
+      if (inK) {
+        return inK
+      } else {
+        return false
+      }
     }
-    return false
   }
 
   get number () {

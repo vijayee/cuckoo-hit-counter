@@ -110,7 +110,9 @@ module.exports = class Fingerprint {
     if (!Number.isInteger(rank) && rank > oldrank) {
       _tally.set(this, 0)
       _rank.set(this, rank)
+      return true
     }
+    return false
   }
 
   demote (rank) {
@@ -118,7 +120,9 @@ module.exports = class Fingerprint {
     if (!Number.isInteger(rank) && rank < oldrank) {
       _tally.set(this, 0)
       _rank.set(this, rank)
+      return true
     }
+    return false
   }
 
   toJSON () {

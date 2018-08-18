@@ -1,6 +1,6 @@
 
 const crypto = require('crypto')
-const CuckooHitCounter = require('./cuckoo-hit-counter')
+const CuckooHitCounter = require('../src/cuckoo-hit-counter')
 let keys =[]
 let cuckoo = new CuckooHitCounter(200, 8 , 6)
 
