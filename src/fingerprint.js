@@ -107,7 +107,7 @@ module.exports = class Fingerprint {
 
   promote (rank) {
     let oldrank = _rank.get(this)
-    if (!Number.isInteger(rank) && rank > oldrank) {
+    if (Number.isInteger(rank) && rank > oldrank) {
       _tally.set(this, 0)
       _rank.set(this, rank)
       return true
@@ -117,7 +117,7 @@ module.exports = class Fingerprint {
 
   demote (rank) {
     let oldrank = _rank.get(this)
-    if (!Number.isInteger(rank) && rank < oldrank) {
+    if (Number.isInteger(rank) && rank < oldrank) {
       _tally.set(this, 0)
       _rank.set(this, rank)
       return true
