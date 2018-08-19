@@ -252,12 +252,12 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let j = util.hash(buf) % cfSize
     let inJ = buckets[ j ] ? buckets[ j ].demote(fingerprint) : false
 
-    if (typeof inK !== 'boolean') {
+    if (typeof inJ !== 'boolean') {
       return inJ
     } else {
       let k = (j ^ fingerprint.hash()) % cfSize
       let inK = buckets[ k ] ? buckets[ k ].demote(fingerprint) : false
-      if (typeof inJ !== 'boolean') {
+      if (typeof inK !== 'boolean') {
         return inK
       } else {
         return false
@@ -350,7 +350,7 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     } else {
       let k = (j ^ fingerprint.hash()) % cfSize
       let inK = buckets[ k ] ? buckets[ k ].tally(fingerprint) : false
-      if (!Number.isInteger(inK)) {
+      if (typeof inK !== 'boolean') {
         return inK
       } else {
         return 0
