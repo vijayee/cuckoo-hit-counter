@@ -12,6 +12,7 @@ let _cfSize = new WeakMap()
 let _fpSize = new WeakMap()
 let _buckets = new WeakMap()
 let _count = new WeakMap()
+let _maxRank = new WeakMap()
 module.exports = class CuckooHitCounter extends EventEmitter  {
   constructor (cfSize, bSize, fpSize) {
      super()
@@ -48,6 +49,15 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
         }
       } else {
         throw new TypeError('Invalid Count')
+      }
+      if (!isNaN(cfSize.maxRank)) {
+        if (!Number.isInteger(cfSize.maxRank)) {
+          throw new TypeError('Invalid Max Rank')
+        } else {
+          _maxRank.set(this, cfSize.maxRank)
+        }
+      } else {
+        throw new TypeError('Invalid Max Rank')
       }
       if (cfSize.buckets) {
         let buckets = cfSize.buckets.map((bucket)=> {
@@ -86,6 +96,8 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
       _bSize.set(this, bSize)
       _cfSize.set(this, cfSize)
       _count.set(this, 0)
+      _maxRank.set(this, 0)
+      _maxRankTally.set(this, 0)
       let buckets = []
       for (let i = 0; i < cfSize; i++) {
         buckets.push(null)
@@ -188,6 +200,11 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let fingerprint = new Fingerprint(buf, fpSize)
     let j = util.hash(buf) % cfSize
     let emit =  (rank) => {
+      let maxRank = _maxRank.get(this)
+      if (rank > maxRank) {
+        maxRank = rank
+        _maxRank.set(this, maxRank)
+      }
       this.emit('promote', { key: buf.toString(), rank})
     }
     let inJ = buckets[ j ] ? buckets[ j ].increment(fingerprint, emit) : false
@@ -282,7 +299,7 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let j = util.hash(buf) % cfSize
     let k = (j ^ fingerprint.hash()) % cfSize
     let emit =  (rank) => {
-      this.emit('promote', { key: buf.toString(), rank})
+      this.emit('demote', { key: buf.toString(), rank})
     }
     let inJ = buckets[ j ] ? buckets[ j ].decrement(fingerprint, emit) : false
 
@@ -392,6 +409,10 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     return _count.get(this)
   }
 
+  get maxRank () {
+    return _maxRank.get(this)
+  }
+
   get reliable () {
     let cfSize = _cfSize.get(this)
     return Math.floor(100 * (this.number / cfSize)) <= 95
@@ -403,12 +424,16 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let count = _count.get(this)
     let buckets = _buckets.get(this)
     let bSize = _bSize.get(this)
+    let maxRank = _maxRank.get(this)
+    let maxRankTally = _maxRankTally.get(this)
+
     return {
       cfSize: cfSize,
       fpSize: fpSize,
       bSize: bSize,
       count: count,
-      buckets: buckets.map((bucket)=> {
+      maxRank: maxRank,
+      buckets: buckets.map((bucket) => {
         if (!bucket) {
           return null
         } else {
