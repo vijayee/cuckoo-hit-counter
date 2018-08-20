@@ -424,7 +424,6 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
     let buckets = _buckets.get(this)
     let bSize = _bSize.get(this)
     let maxRank = _maxRank.get(this)
-    let maxRankTally = _maxRankTally.get(this)
 
     return {
       cfSize: cfSize,
