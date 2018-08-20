@@ -45,7 +45,7 @@ module.exports = class Fingerprint {
         fp[ 0 ] = 7
       }
       _fp.set(this, fp)
-      _rank.set(this, 0)
+      _rank.set(this, 1)
       _tally.set(this, 0)
     }
   }
