@@ -97,7 +97,6 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
       _cfSize.set(this, cfSize)
       _count.set(this, 0)
       _maxRank.set(this, 0)
-      _maxRankTally.set(this, 0)
       let buckets = []
       for (let i = 0; i < cfSize; i++) {
         buckets.push(null)
