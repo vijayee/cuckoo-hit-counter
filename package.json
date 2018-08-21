@@ -1,6 +1,6 @@
 {
   "name": "cuckoo-hit-counter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A hit counter based on cuckoo filters ",
   "main": "src/index.js",
   "scripts": {
