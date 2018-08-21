@@ -8,7 +8,7 @@ let cuckoo = new CuckooHitCounter(200, 8 , 6)
 for (let i = 0; i < 200; i++ ) {
   let rand = crypto.randomBytes(36)
   keys.push(rand)
-  if (!cuckoo.add(rand)) {
+  if (!cuckoo.increment(rand)) {
     console.log(`rejected ${i}`)
   }
   if (!cuckoo.contains(rand)) {
@@ -20,7 +20,7 @@ cuckoo.on('promote', (data) => {
   //console.log(`${data.key.toString('hex')} ${data.rank}`)
 })
 
-for (let i = 0; i < 200000; i++) {
+for (let i = 0; i < 5000; i++) {
   cuckoo.increment(keys[getRandomInt(0, keys.length - 1)])
 }
 

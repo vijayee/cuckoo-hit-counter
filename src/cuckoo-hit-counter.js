@@ -216,7 +216,7 @@ module.exports = class CuckooHitCounter extends EventEmitter  {
       if (typeof inK !== 'boolean') {
         return inK
       } else {
-        return false
+        return this.add(buf)
       }
     }
   }
